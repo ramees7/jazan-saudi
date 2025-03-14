@@ -21,14 +21,14 @@ const Footer = () => {
         <div className="absolute inset-0 bg-[#4183d7] opacity-80"></div>
 
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative z-10 text-xs">
           <h2>تطوير وتشغيل</h2>
           <img src={logo} alt="logo" className="w-48 mt-2" />
         </div>
         <div className="lg:text-center relative z-10">
-          <h2>للإستفسار والدعم الفني</h2>
-          <h2>00966112641362</h2>
-          <button className="bg-white px-5 py-3 rounded-3xl"></button>
+          <h2 className="text-xs">للإستفسار والدعم الفني</h2>
+          <h2 className="py-1">00966112641362</h2>
+          <button className="bg-white px-6 py-2.5 rounded-3xl"></button>
         </div>
         <div className="flex flex-col lg:items-end relative z-10">
           <div className="flex items-end gap-3 mb-2">
@@ -49,11 +49,11 @@ const Footer = () => {
             </div>
             <img src={ssl} alt="ssl" className="w-8" />
           </div>
-          <h2>يفضل استخدام متصفح جوجل كروم</h2>
+          <h2 className="text-xs">يفضل استخدام متصفح جوجل كروم</h2>
         </div>
       </div>
 
-      <div className="text-center py-4 text-sm">
+      <div className="text-center py-4 text-xs">
         <h4>جميع الحقوق محفوظة غرفة جازان © 2025</h4>
       </div>
     </footer>
