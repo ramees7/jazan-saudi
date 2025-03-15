@@ -23,26 +23,17 @@ const Chat = () => {
   // Submit Form Data to Backend
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await fetch("https://your-backend-api.com/support", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+    alert("تم الإرسال بنجاح!");
 
-      if (response.ok) {
-        alert("تم إرسال البيانات بنجاح!");
-        setFormData({ name: "", email: "", phone: "" });
-        setIsOpen(false);
-      } else {
-        alert("حدث خطأ أثناء الإرسال.");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("تعذر الاتصال بالخادم.");
-    }
+    // Reset form
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+    });
+
+    // Close chat box
+    setIsOpen(false);
   };
 
   return (

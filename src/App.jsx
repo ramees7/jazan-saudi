@@ -67,6 +67,7 @@ import Home from "./User/Home";
 import loadingImg from "./assets/ajax-loader.gif";
 import { AuthProvider } from "./AuthContext";
 import PrivateRoute from "./PrivateRoute";
+import EditJob from "./Admin/EditJob ";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -111,6 +112,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <ManageDocument />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/edit-document/:jobId"
+                element={
+                  <PrivateRoute>
+                    <EditJob />
                   </PrivateRoute>
                 }
               />

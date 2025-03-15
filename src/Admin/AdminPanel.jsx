@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import CryptoJS from "crypto-js";
 import { Link } from "react-router-dom";
-import { message } from "antd";
 
 const AdminPanel = () => {
   const [formData, setFormData] = useState({
@@ -10,7 +9,7 @@ const AdminPanel = () => {
     facilityName: "",
     facilityNumber: "",
     orderNumber: "",
-    orderType: "",
+    requestType: "",
     applicantName: "",
     creationDate: "",
     expiryDate: "",
@@ -52,9 +51,12 @@ const AdminPanel = () => {
       const creationDate = new Date(value);
       const expiryDate = new Date(creationDate);
       expiryDate.setMonth(expiryDate.getMonth() + 2);
+
+      // Format the expiry date to include time (ISO format)
+      const formattedExpiryDate = expiryDate.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM
       setFormData((prev) => ({
         ...prev,
-        expiryDate: expiryDate.toISOString().split("T")[0],
+        expiryDate: formattedExpiryDate,
       }));
     }
   };
@@ -73,18 +75,21 @@ const AdminPanel = () => {
     const jobId = generateUniqueId(200);
     setJobIdPdf(jobId);
     const jobDetailsUrl = `${BASE_URL}/document-verify/${jobId}`;
-    console.log("QR Code URL:", jobDetailsUrl); // Debugging
     try {
       const response = await axios.post(
         `${BASE_URL_API}/api/jobs/create-job`,
         {
-          documentNumber: formData.orderNumber,
-          establishmentName: formData.facilityName,
-          subscriptionNumber: formData.facilityNumber,
-          commercialRegistrationNumber: formData.commercialRegNumber,
+          orderNumber: formData.orderNumber,
+          facilityName: formData.facilityName,
+          facilityNumber: formData.facilityNumber,
+          commercialRegNumber: formData.commercialRegNumber,
           applicantName: formData.applicantName,
-          creationDate: formData.creationDate,
-          jobId: jobId, // Use order number as job ID
+          creationDate: new Date(formData.creationDate).toISOString(), // Include time
+          expiryDate: new Date(formData.expiryDate).toISOString(), // Include time
+          orderAmount: formData.orderAmount, // Include order amount
+          roomName: formData.roomName, // Include room name
+          requestType: formData.requestType, // Include request type
+          jobId, // Use order number as job ID
           jobDetailsUrl, // Use the constructed URL
         },
         {
@@ -103,6 +108,10 @@ const AdminPanel = () => {
 
   // Handle PDF upload for step 2
   const handlePdfUpload = async () => {
+    if (!pdf) {
+      alert("يرجى تحديد ملف PDF للرفع"); // "Please select a PDF file to upload"
+      return;
+    }
     const formData = new FormData();
     formData.append("pdf", pdf); // 'pdf' is the file selected by the user
     try {
@@ -119,10 +128,10 @@ const AdminPanel = () => {
 
       setPdfUrl(response.data.pdfUrl); // Set PDF URL
       setStep(3); // Move to step 3
-      message.success("تم رفع ملف الـPDF بنجاح");
+      alert("تم رفع ملف الـPDF بنجاح");
     } catch (error) {
       console.error("Error uploading PDF:", error);
-      message.error("حدث خطأ أثناء رفع ملف الـPDF");
+      alert("حدث خطأ أثناء رفع ملف الـPDF");
     }
   };
 
@@ -130,12 +139,25 @@ const AdminPanel = () => {
     <div className="flex flex-col items-center justify-center bg-gray-100 px-10 pb-10">
       <div className="flex justify-between items-center  w-full my-4">
         <h2 className="text-xl font-bold  ">لوحة الإدارة</h2>
-        <Link
-          to={"/manage-document"}
-          className="text-xs py-1.5 px-3 bg-[#4183d7] text-white"
-        >
-          Manage Document | إدارة المستندات
-        </Link>{" "}
+        <div>
+          <button>
+            <Link
+              to={"/manage-document"}
+              className="text-xs py-1.5 px-3 bg-[#4183d7] text-white"
+            >
+              Manage Document | إدارة المستندات
+            </Link>
+          </button><br /><br />
+          <button>
+            {" "}
+            <Link
+              to={"/admin-panel"}
+              className="text-xs py-1.5 px-3 bg-[#4183d7] text-white"
+            >
+              Admin Panel | لوحة التحكم
+            </Link>
+          </button>
+        </div>
       </div>
       {step === 1 && (
         <form
@@ -192,11 +214,11 @@ const AdminPanel = () => {
             </div>
 
             <div>
-              <label className="font-semibold"> Order Type | نوع الطلب</label>
+              <label className="font-semibold"> Request Type | نوع الطلب</label>
               <input
                 type="text"
-                name="orderType"
-                value={formData.orderType}
+                name="requestType"
+                value={formData.requestType}
                 onChange={handleChange}
                 className="w-full border p-2 rounded"
               />
@@ -220,7 +242,7 @@ const AdminPanel = () => {
                 Order Creation Date & Time | تاريخ ووقت إنشاء الطلب
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 name="creationDate"
                 value={formData.creationDate}
                 onChange={handleChange}
@@ -233,7 +255,7 @@ const AdminPanel = () => {
                 Order Expiry Date | تاريخ صلاحية الطلب{" "}
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 name="expiryDate"
                 value={formData.expiryDate}
                 readOnly

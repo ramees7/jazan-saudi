@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from "axios";
-import { message } from "antd";
 import { useNavigate } from "react-router-dom";
 
 const DocumentVerify = () => {
@@ -14,6 +13,7 @@ const DocumentVerify = () => {
   const [error, setError] = useState("");
   const captchaRef = useRef(null);
   const navigate = useNavigate();
+  const BASE_URL_API = import.meta.env.VITE_BASEURL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,27 +29,29 @@ const DocumentVerify = () => {
 
       try {
         const response = await axios.post(
-          "https://your-backend-api.com/verify-step1",
+          `${BASE_URL_API}/api/verify`, // Use the correct backend URL
           {
             referenceNumber,
             captchaValue,
           }
         );
+        console.log(response);
 
         if (response.data.success) {
-          message.success("تم التحقق بنجاح!");
+          alert("تم التحقق بنجاح!");
           setStep(2); // Move to step 2
+        } else {
+          alert(response.data.message); // Show error message from backend
         }
       } catch (error) {
-        console.log(error);
-        message.error("حدث خطأ أثناء التحقق. الرجاء المحاولة مرة أخرى.");
+        console.error("Error during verification:", error);
+        alert("حدث خطأ أثناء التحقق. الرجاء المحاولة مرة أخرى.");
       } finally {
         setIsLoading(false);
         captchaRef.current.reset(); // Reset CAPTCHA
       }
     } else if (step === 2) {
-      // Step 2: Verify membership or establishment number
-      if (selectedOption === "establishment" && !inputValue) {
+      if (selectedOption === "facilityNumber" && !inputValue) {
         setError("الرجاء إدخال رقم المنشأة.");
         return;
       }
@@ -58,20 +60,22 @@ const DocumentVerify = () => {
 
       try {
         const response = await axios.post(
-          "https://your-backend-api.com/verify-step2",
+          `${BASE_URL_API}/api/jobs/job-enquiry-verify`, // Use the correct backend URL
           {
             option: selectedOption,
             inputValue,
           }
         );
-
+        console.log(response);
         if (response.data.success) {
-          message.success("تم التحقق بنجاح!");
-          navigate("/document-verify/12112121");
+          alert("تم التحقق بنجاح!");
+          navigate(`/document-verify/${response.data.job.jobId}`);
+        } else {
+          alert(response.data.message); // Show error message from backend
         }
       } catch (error) {
-        console.log(error);
-        message.error("حدث خطأ أثناء التحقق. الرجاء المحاولة مرة أخرى.");
+        console.error("Error during verification:", error);
+        alert("حدث خطأ أثناء التحقق. الرجاء المحاولة مرة أخرى.");
       } finally {
         setIsLoading(false);
       }
@@ -166,18 +170,17 @@ const DocumentVerify = () => {
                   رقم العضوية
                 </label>
 
-                {/* Establishment Option */}
                 <label className="flex items-center gap-2 cursor-pointer border p-3 rounded-md peer-checked:border-green-700">
                   <input
                     type="radio"
                     name="verification"
-                    checked={selectedOption === "establishment"}
-                    onChange={() => handleOptionChange("establishment")}
+                    checked={selectedOption === "facilityNumber"}
+                    onChange={() => handleOptionChange("facilityNumber")}
                     className="w-4 h-4 text-green-500 peer hidden"
                   />
                   <span
                     className={`w-4 h-4 border-2 rounded-full flex items-center justify-center ${
-                      selectedOption === "establishment"
+                      selectedOption === "facilityNumber"
                         ? "border-green-700"
                         : "border-gray-400"
                     }`}
@@ -187,11 +190,11 @@ const DocumentVerify = () => {
               </div>
 
               <h2 className="my-6 font-extralight text-sm">
-                {referenceNumber}10101101
+                {referenceNumber}
               </h2>
 
               {/* Conditional Input Field */}
-              {selectedOption === "establishment" && (
+              {selectedOption === "facilityNumber" && (
                 <div className="mb-4">
                   <input
                     type="text"
